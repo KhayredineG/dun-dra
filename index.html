@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DunDra Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      grid-template-rows: auto 1fr auto;
+      height: 100vh;
+    }
+    
+    .panel {
+      padding: 1rem;
+      border: 1px solid #ccc;
+      margin: 0.5rem;
+      border-radius: 5px;
+    }
+    
+    #character-panel {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+    }
+    
+    #main-content {
+      grid-column: 2;
+      grid-row: 2;
+    }
+    
+    #quest-log {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+    }
+    
+    #dialogue-panel {
+      grid-column: 1 / span 3;
+      grid-row: 3;
+    }
+  </style>
+</head>
+<body>
+  <div id="character-panel" class="panel">
+    <h2>Character</h2>
+    <div id="character-stats">
+      <p>Level: <span id="level">1</span></p>
+      <p>XP: <span id="xp">0</span></p>
+      <p>Gold: <span id="gold">0</span></p>
+    </div>
+  </div>
+  
+  <div id="main-content" class="panel">
+    <h2>Game Area</h2>
+    <div id="game-output"></div>
+  </div>
+  
+  <div id="quest-log" class="panel">
+    <h2>Quest Log</h2>
+    <ul id="quest-list"></ul>
+  </div>
+  
+  <div id="dialogue-panel" class="panel">
+    <h2>Dialogue</h2>
+    <div id="dialogue-text"></div>
+    <div id="dialogue-options"></div>
+  </div>
+
+  <script src="game_logic.js"></script>
+  <script src="dm_engine.js"></script>
+  <script src="character_creator.js"></script>
+  <script>
+    // Initialize character creation UI
+    document.addEventListener('DOMContentLoaded', () => {
+      const characterCreationDiv = document.createElement('div');
+      characterCreationDiv.id = 'character-creation';
+      characterCreationDiv.innerHTML = `
+        <h2>Create Your Character</h2>
+        <form id="character-form">
+          <div>
+            <label for="character-name">Character Name:</label>
+            <input type="text" id="character-name" required>
+          </div>
+          <div>
+            <label for="character-concept">Character Concept:</label>
+            <textarea id="character-concept" required></textarea>
+          </div>
+          <button type="submit">Create Character</button>
+        </form>
+      `;
+      document.getElementById('main-content').prepend(characterCreationDiv);
+      
+      document.getElementById('character-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('character-name').value;
+        const concept = document.getElementById('character-concept').value;
+        const dm = new DMEngine();
+        const creator = new CharacterCreator(dm);
+        try {
+          await creator.createCharacter(`${name}: ${concept}`);
+          characterCreationDiv.remove();
+        } catch (error) {
+          const errorDiv = document.createElement('div');
+          errorDiv.style.color = 'red';
+          errorDiv.style.padding = '1rem';
+          errorDiv.style.marginTop = '1rem';
+          errorDiv.style.border = '1px solid red';
+          errorDiv.style.borderRadius = '5px';
+          errorDiv.textContent = `Failed to create character: ${error.message}`;
+          characterCreationDiv.appendChild(errorDiv);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
